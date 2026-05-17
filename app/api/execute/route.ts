@@ -1,4 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { withX402 } from "x402-next";
+import type { Address } from "viem";
+
+export const runtime = "nodejs";
 
 interface ExecuteBody {
   token: string;
@@ -6,16 +10,22 @@ interface ExecuteBody {
   amountUsd: number;
 }
 
-export async function POST(request: NextRequest) {
+const payTo = (
+  process.env.WALLET_ADDRESS ?? "0x0000000000000000000000000000000000000000"
+) as Address;
+
+async function handler(request: NextRequest): Promise<NextResponse> {
   try {
     const body: ExecuteBody = await request.json();
     const { token, chain, amountUsd } = body;
 
     if (!token || !chain || !amountUsd) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      );
     }
 
-    // Mock execution — in production, use Coinbase AgentKit or Jupiter API
     const mockTxHash = `0x${Math.random().toString(16).slice(2).padEnd(64, "0")}`;
 
     return NextResponse.json({
@@ -30,3 +40,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Execution failed" }, { status: 500 });
   }
 }
+
+export const POST = withX402(handler, payTo, {
+  price: "$0.10",
+  network: "base",
+  config: { description: "Copy Trade Execution" },
+});

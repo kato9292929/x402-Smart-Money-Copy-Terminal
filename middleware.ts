@@ -1,26 +1,12 @@
-import { paymentMiddleware } from "x402-next";
-import type { Address } from "viem";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
-export const middleware = paymentMiddleware(
-  (process.env.WALLET_ADDRESS ?? "0x0000000000000000000000000000000000000000") as Address,
-  {
-    "/api/signals": {
-      price: "$0.05",
-      network: "base",
-      config: {
-        description: "Smart Money Signal - 1 query",
-      },
-    },
-    "/api/execute": {
-      price: "$0.10",
-      network: "base",
-      config: {
-        description: "Copy Trade Execution",
-      },
-    },
-  }
-);
+// x402 payment verification is handled inside each API route via withX402
+// (keeps middleware bundle under Vercel's 1 MB Edge Function limit)
+export function middleware(_req: NextRequest) {
+  return NextResponse.next();
+}
 
 export const config = {
-  matcher: ["/api/signals", "/api/execute"],
+  matcher: [],
 };
